@@ -1,0 +1,20 @@
+.mootocomplete-ul {
+    z-index:999;
+    position:absolute;
+
+    background:#eee;
+    padding:10px;
+    border:1px solid #ccc;
+
+    list-style-type: none;
+}
+
+.icon {
+    background:#FFFFFF url(http://humanite-biodiversite.fr/assets/spinner-896559676181e48032ffc436b964aea6.gif) no-repeat 4px 4px;
+    padding:4px 4px 4px 22px;
+    height:18px;
+}
+
+.mootocomplete-li {
+    cursor: pointer;
+}
