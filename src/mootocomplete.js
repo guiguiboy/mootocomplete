@@ -19,16 +19,25 @@ var Mootocomplete = new Class({
     options: {
         dataSource: null,
         itemClass: null,
+        itemSelectCallback: function(){},
         maxItems: 10,
-        imgPath: '/imgs',
+        imgPath: '/mootocomplete/imgs',
         displaySpinner: true,
-        spinnerGif: 'spinner.gif' //inside the imgPath
+        minCharacters: 3,
+        limit: 10,
+        noResultText: 'No results for this search',
+        spinnerGif: '/spinner.gif' //inside the imgPath
     },
 
     /**
      * Element
      */
     field: null,
+
+    /**
+     * url for ajax requests
+     */
+    url: null,
 
     /**
      * boolean
@@ -43,8 +52,9 @@ var Mootocomplete = new Class({
     /**
      * Constructor
      */
-    initialize: function(field, options){
+    initialize: function(field, url, options){
         this.field = field;
+        this.url   = url;
         this.setOptions(options);
         this.addListeners();
         this.container = new Element('ul', {class: 'mootocomplete-ul'});
@@ -71,39 +81,76 @@ var Mootocomplete = new Class({
      */
     addListeners: function()
     {
-        $(this.field).addEvent('keyup', this.displayAutocomplete.bind(this));
+        $(this.field).addEvent('keyup', this.processAutocomplete.bind(this));
         //$(this.field).addEvent('blur', this.hideAutocomplete.bind(this));
     },
 
     /**
      * Process l'affichage de l'autocomplete
      */
-    displayAutocomplete: function()
+    processAutocomplete: function()
     {
-        var li;
         if (!this.isActive)
             return;
 
         this.displaySpinnerOnInput();
-        var values = this.getValues();
+        this.processRequest();
+    },
 
+    /**
+     * Displays the autocomplete based on JSON data
+     *
+     * @param json
+     */
+    displayAutocomplete: function(json)
+    {
+        var values = JSON.decode(json);
+
+        if (values.length == 0)
+            this.displayEmptyAutocomplete();
+        else
+            this.displayFilledAutocomplete(values);
+    },
+
+    /**
+     * Affiche un autocomplete vide
+     */
+    displayEmptyAutocomplete: function()
+    {
         this.container.empty();
 
-        //get a spinner inside the text element for more rock !
-
-        for (var i in values) {
-            li = new Element('li', {
-                text: values[i],
-                class: 'mootocomplete-li'
-            });
-            this.configureLi(li);
-            this.container.adopt(li);
-        }
+        var li = new Element('li', {
+            text: this.options.noResultText,
+            class: 'mootocomplete-li'
+        });
+        this.container.adopt(li);
 
         this.hideSpinnerOnInput();
 
         this.container.inject(this.field, 'after');
+    },
 
+    /**
+     * Affiche un autocomplete remplit
+     */
+    displayFilledAutocomplete: function(values)
+    {
+        this.container.empty();
+
+        //get a spinner inside the text element for more rock !
+
+        values.forEach(function (text, index) {
+            var li = new Element('li', {
+                text: text,
+                class: 'mootocomplete-li'
+            });
+            this.configureLi(li);
+            this.container.adopt(li);
+        }.bind(this));
+
+        this.hideSpinnerOnInput();
+
+        this.container.inject(this.field, 'after');
     },
 
     /**
@@ -142,6 +189,8 @@ var Mootocomplete = new Class({
     processItemSelected: function(ev)
     {
         this.field.set('value', ev.target.innerHTML);
+        console.log(this.options.onItemSelect);
+        this.options.itemSelectCallback(ev.target.innerHTML);
         this.hideAutocomplete();
     },
 
@@ -155,70 +204,22 @@ var Mootocomplete = new Class({
     },
 
     /**
-     * Returns values for the autocomplete
+     * Processes Ajax request
      */
-    getValues: function()
+    processRequest: function()
     {
-        return this.options.dataSource.getValues();
-    }
-
-
-
-});
-
-var MootocompleteDataSourceArray = new Class({
-
-    type: 'array',
-
-    values: {},
-
-    initialize: function(values)
-    {
-        this.values = values;
-    },
-
-    getValues: function()
-    {
-        return this.values;
+        new Request({
+            url: this.url,
+            method: 'POST',
+            data: {
+                input: this.field.value,
+                limit: this.options.limit
+            },
+            onSuccess: this.displayAutocomplete.bind(this)
+        }).send();
     }
 
 });
 
-
-var MootocompleteDataSourceAjax = new Class({
-
-    type: 'ajax',
-
-    /**
-     * uri to perform the request
-     */
-    uri: null,
-
-    /**
-     * data-type (ie: JSON)
-     */
-    type: null,
-
-    /**
-     * Initialize
-     *
-     * @param uri
-     * @param type
-     */
-    initialize: function(uri, type)
-    {
-        this.uri = uri;
-        this.type = type;
-    },
-
-    /**
-     * Process Ajax Request
-     */
-    getValues: function()
-    {
-
-    }
-
-});
 
 
