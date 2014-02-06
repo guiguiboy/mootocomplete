@@ -10,34 +10,38 @@
 
         <p>Yet another autocomplete... but Mootools this time !</p>
 
-        <h1>Simple autocomplete with array as data source</h1>
+        <h1>Autocomplete with Ajax</h1>
         <div>
-            <input type="text" id="simple_autocomplete_with_array" />
+            <input type="text" id="autocomplete_with_ajax" />
         </div>
         <script type="text/javascript">
             window.addEvent('domready', function() {
 
-                var v1 = new MootocompleteDataSourceArray({
-                    1: 'test',
-                    2: 'lol',
-                    3: 'waza'
-                });
-
-                var a1 = new Mootocomplete($('simple_autocomplete_with_array'), {
-                    dataSource: v1
-                });
+                var auto1 = new Mootocomplete($('autocomplete_with_ajax'), '/mootocomplete/ajax.php');
             });
         </script>
 
-        <h1>Autocomplete with ajax as datasource</h1>
-        <div>
-            <input type="text" id="autocomplete_with_ajax" />
-        </div>
+        <p>Code here ...</p>
 
-        <h1>Adding some style...</h1>
+        <h1>Autocomplete with Ajax and perform action on item selection</h1>
         <div>
-            <input type="text" id="autocomplete_with_style" />
+            <input type="text" id="autocomplete_with_ajax_perform_action_item_selection" />
+            <input type="text" id="text_field_to_perform_action" />
         </div>
+        <script type="text/javascript">
+            window.addEvent('domready', function() {
+
+                var optionsAuto2 = {
+                    itemSelectCallback: function(value) {
+                        $('text_field_to_perform_action').value = value;
+                    }
+                };
+                var auto2 = new Mootocomplete($('autocomplete_with_ajax_perform_action_item_selection'),
+                        '/mootocomplete/ajax.php', optionsAuto2);
+            });
+        </script>
+
+        <p>Code here ...</p>
 
     <p>By Guiguiboy</p>
 
