@@ -17,16 +17,21 @@ var Mootocomplete = new Class({
      *  - displaySpinner: displays the spinner at the right of the input
      */
     options: {
-        dataSource: null,
+
+        mootocompleteClass: 'mootocomplete-container',
         itemClass: null,
         itemSelectCallback: function(){},
         maxItems: 10,
-        imgPath: '/mootocomplete/imgs',
+        displayEmptyItem: true,
+        emptyText: '(No value)',
+        emptyItemClass: 'mootocomplete-empty-value',
+        imgPath: '/mootocomplete/imgs/',
         displaySpinner: true,
         minCharacters: 3,
         limit: 10,
         noResultText: 'No results for this search',
-        spinnerGif: '/spinner.gif' //inside the imgPath
+        ajaxRequestHandlerClass: 'MootocompleteAjaxRequest', //Or any MootocompleteAjaxRequest subtype
+        spinnerGif: 'spinner.gif' //inside the imgPath
     },
 
     /**
@@ -45,9 +50,21 @@ var Mootocomplete = new Class({
     isActive: true,
 
     /**
-     * container
+     * Element
+     * ul Container
      */
-    container: null,
+    ulContainer: null,
+
+    /**
+     * Element
+     * Div Container
+     */
+    divContainer: null,
+
+    /**
+     * Request Handler
+     */
+    requestHandler: null,
 
     /**
      * Constructor
@@ -57,7 +74,32 @@ var Mootocomplete = new Class({
         this.url   = url;
         this.setOptions(options);
         this.addListeners();
-        this.container = new Element('ul', {class: 'mootocomplete-ul'});
+        this.initializeElements();
+        this.initializeAjaxRequestHandler();
+    },
+
+    /**
+     * Inits component
+     */
+    initializeElements: function()
+    {
+        this.divContainer = new Element('div', {
+            class: this.options.mootocompleteClass
+        });
+        this.ulContainer = new Element('ul');
+        this.ulContainer.inject(this.divContainer);
+        this.divContainer.inject(this.field, 'after');
+        this.divContainer.hide();
+    },
+
+    /**
+     * Inits the Ajax request handler class
+     */
+    initializeAjaxRequestHandler: function()
+    {
+        this.requestHandler = new window[this.options.ajaxRequestHandlerClass](this.url, {
+            onSuccess: this.displayAutocomplete.bind(this)
+        });
     },
 
     /**
@@ -82,7 +124,6 @@ var Mootocomplete = new Class({
     addListeners: function()
     {
         $(this.field).addEvent('keyup', this.processAutocomplete.bind(this));
-        //$(this.field).addEvent('blur', this.hideAutocomplete.bind(this));
     },
 
     /**
@@ -117,17 +158,17 @@ var Mootocomplete = new Class({
      */
     displayEmptyAutocomplete: function()
     {
-        this.container.empty();
+        this.ulContainer.empty();
 
         var li = new Element('li', {
             text: this.options.noResultText,
             class: 'mootocomplete-li'
         });
-        this.container.adopt(li);
+        this.ulContainer.adopt(li);
 
         this.hideSpinnerOnInput();
 
-        this.container.inject(this.field, 'after');
+        this.divContainer.show();
     },
 
     /**
@@ -135,9 +176,19 @@ var Mootocomplete = new Class({
      */
     displayFilledAutocomplete: function(values)
     {
-        this.container.empty();
+        this.ulContainer.empty();
 
         //get a spinner inside the text element for more rock !
+
+        if (this.options.displayEmptyItem) {
+            var li = new Element('li', {
+                text: this.options.emptyText,
+                class: this.options.emptyItemClass
+            });
+            li.addEvent('click', this.processEmptyItemSelected.bind(this));
+            this.ulContainer.adopt(li);
+        }
+
 
         values.forEach(function (text, index) {
             var li = new Element('li', {
@@ -145,12 +196,22 @@ var Mootocomplete = new Class({
                 class: 'mootocomplete-li'
             });
             this.configureLi(li);
-            this.container.adopt(li);
+            this.ulContainer.adopt(li);
         }.bind(this));
 
         this.hideSpinnerOnInput();
 
-        this.container.inject(this.field, 'after');
+        this.divContainer.show();
+    },
+
+    /**
+     * Event fired when the empty item has been selected on the list
+     */
+    processEmptyItemSelected: function()
+    {
+        this.field.set('value', '');
+        this.options.itemSelectCallback(null);
+        this.hideAutocomplete();
     },
 
     /**
@@ -189,7 +250,6 @@ var Mootocomplete = new Class({
     processItemSelected: function(ev)
     {
         this.field.set('value', ev.target.innerHTML);
-        console.log(this.options.onItemSelect);
         this.options.itemSelectCallback(ev.target.innerHTML);
         this.hideAutocomplete();
     },
@@ -199,27 +259,64 @@ var Mootocomplete = new Class({
      */
     hideAutocomplete: function()
     {
-        this.container.empty();
-        this.container.destroy();
+        this.divContainer.empty();
+        this.divContainer.hide();
     },
 
     /**
-     * Processes Ajax request
+     * Processes Ajax request in order to retrieve the data
      */
     processRequest: function()
     {
-        new Request({
-            url: this.url,
-            method: 'POST',
-            data: {
-                input: this.field.value,
-                limit: this.options.limit
-            },
-            onSuccess: this.displayAutocomplete.bind(this)
-        }).send();
+        this.requestHandler.sendRequest({
+            input: this.field.value,
+            limit: this.options.limit
+        });
     }
 
 });
 
 
+/**
+ * MootoCompleteAjaxRequest
+ * Class to handle such Ajax Requests for the autocompleter to work.
+ */
+var MootocompleteAjaxRequest = new Class({
 
+    url: null,
+
+    onSuccess: function() {},
+
+    onComplete: function() {},
+
+    onFailure: function() {},
+
+    /**
+     * Constructor
+     *
+     * @param url
+     * @param options
+     */
+    initialize: function(url, options) {
+        this.url = url;
+        this.onSuccess  = options.onSuccess;
+        this.onComplete = options.onComplete;
+        this.onFailure  = options.onFailure;
+    },
+
+    /**
+     * Sends the request
+     *
+     * @param data
+     */
+    sendRequest: function(data) {
+        new Request({
+            url: this.url,
+            method: 'POST',
+            data: data,
+            onSuccess: this.onSuccess,
+            onComplete: this.onComplete,
+            onFailure: this.onFailure
+        }).send();
+    }
+});

@@ -1,4 +1,4 @@
-.mootocomplete-ul {
+.mootocomplete-container {
     z-index:999;
     position:absolute;
 
@@ -6,6 +6,10 @@
     padding:10px;
     border:1px solid #ccc;
 
+
+}
+
+.mootocomplete-container ul{
     list-style-type: none;
 }
 
@@ -17,4 +21,10 @@
 
 .mootocomplete-li {
     cursor: pointer;
+}
+
+.mootocomplete-empty-value {
+    font-style: italic;
+    font-size: 12px;
+    color: lightgrey;
 }
