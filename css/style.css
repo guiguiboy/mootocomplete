@@ -3,28 +3,31 @@
     position:absolute;
 
     background:#eee;
-    padding:10px;
+    padding: 0;
     border:1px solid #ccc;
 
-
+    width: 200px;
 }
 
 .mootocomplete-container ul{
     list-style-type: none;
+    padding: 0;
+    margin: 0;
 }
 
-.icon {
-    background:#FFFFFF url(http://humanite-biodiversite.fr/assets/spinner-896559676181e48032ffc436b964aea6.gif) no-repeat 4px 4px;
-    padding:4px 4px 4px 22px;
-    height:18px;
-}
-
-.mootocomplete-li {
+.mootocomplete-container ul li {
     cursor: pointer;
+    border: 1px solid grey;
+    padding: 5px;
+
+}
+.mootocomplete-container ul li:hover{
+    font-weight: bold;
 }
 
 .mootocomplete-empty-value {
     font-style: italic;
     font-size: 12px;
     color: lightgrey;
+    cursor: pointer;
 }

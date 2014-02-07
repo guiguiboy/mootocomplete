@@ -62,6 +62,18 @@ var Mootocomplete = new Class({
     divContainer: null,
 
     /**
+     * Element
+     * Spinner container
+     */
+    spinnerContainer: null,
+
+    /**
+     * Element
+     * Spinner
+     */
+    spinnerElement: null,
+
+    /**
      * Request Handler
      */
     requestHandler: null,
@@ -76,6 +88,7 @@ var Mootocomplete = new Class({
         this.addListeners();
         this.initializeElements();
         this.initializeAjaxRequestHandler();
+        this.initializeSpinner();
     },
 
     /**
@@ -100,6 +113,23 @@ var Mootocomplete = new Class({
         this.requestHandler = new window[this.options.ajaxRequestHandlerClass](this.url, {
             onSuccess: this.displayAutocomplete.bind(this)
         });
+    },
+
+    /**
+     * Inits spinner div if option is enabled
+     */
+    initializeSpinner: function()
+    {
+        if (!this.options.displaySpinner)
+            return;
+
+        this.spinnerContainer = new Element('span');
+        this.spinnerElement   = new Element('img', {
+            src: this.options.imgPath + '/' + this.options.spinnerGif
+        });
+        this.spinnerContainer.adopt(this.spinnerElement);
+        this.spinnerElement.hide();
+        this.spinnerContainer.inject(this.field, 'after');
     },
 
     /**
@@ -189,7 +219,6 @@ var Mootocomplete = new Class({
             this.ulContainer.adopt(li);
         }
 
-
         values.forEach(function (text, index) {
             var li = new Element('li', {
                 text: text,
@@ -221,7 +250,7 @@ var Mootocomplete = new Class({
     {
         if (!this.options.displaySpinner)
             return;
-        this.field.set('style', 'background:#FFFFFF url(' + this.options.imgPath + '/' + this.options.spinnerGif +') no-repeat 4px 4px; padding:4px 4px 4px 22px; height:18px');
+        this.spinnerElement.show();
     },
 
     /**
@@ -231,7 +260,7 @@ var Mootocomplete = new Class({
     {
         if (!this.options.displaySpinner)
             return;
-        this.field.set('style', '');
+        this.spinnerElement.hide();
     },
 
     /**
@@ -259,7 +288,7 @@ var Mootocomplete = new Class({
      */
     hideAutocomplete: function()
     {
-        this.divContainer.empty();
+        this.ulContainer.empty();
         this.divContainer.hide();
     },
 

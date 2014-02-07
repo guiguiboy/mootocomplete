@@ -35,5 +35,6 @@ List of improvements to be done
  - handle hidden input elements (such as ids)
  - total style customization (with usage examples)
  - bold searched characters that are in the response
+ - add up, down keys control
  - ask javascript guru how to improve this script
  - unit tests (but with what lib ??!)
