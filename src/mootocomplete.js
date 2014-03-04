@@ -25,6 +25,7 @@ var Mootocomplete = new Class({
         displayEmptyItem: true,
         emptyText: '(No value)',
         emptyItemClass: 'mootocomplete-empty-value',
+        liItemClass: 'mootocomplete-li',
         imgPath: '/mootocomplete/imgs/',
         displaySpinner: true,
         minCharacters: 3,
@@ -192,8 +193,9 @@ var Mootocomplete = new Class({
 
         var li = new Element('li', {
             text: this.options.noResultText,
-            class: 'mootocomplete-li'
+            class: this.options.liItemClass
         });
+        li.addEvent('click', this.processEmptyItemSelected.bind(this));
         this.ulContainer.adopt(li);
 
         this.hideSpinnerOnInput();
@@ -222,7 +224,7 @@ var Mootocomplete = new Class({
         values.forEach(function (text, index) {
             var li = new Element('li', {
                 text: text,
-                class: 'mootocomplete-li'
+                class: this.options.liItemClass
             });
             this.configureLi(li);
             this.ulContainer.adopt(li);
