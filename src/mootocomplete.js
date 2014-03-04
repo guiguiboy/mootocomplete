@@ -10,20 +10,13 @@ var Mootocomplete = new Class({
 
     /**
      * Available options to configure Mootocomplete
-     *  - dataSource : MootocompleteDatasource* (how to create Interface in Mootools ??)
-     *  - itemClass :
-     *  - imgPath : path to imgs (assets ?)
-     *  - zIndex ???
-     *  - displaySpinner: displays the spinner at the right of the input
      */
     options: {
 
         mootocompleteClass: 'mootocomplete-container',
-        itemClass: null,
         itemSelectCallback: function(){},
-        maxItems: 10,
         displayEmptyItem: true,
-        emptyText: '(No value)',
+        emptyItemText: '(No value)',
         emptyItemClass: 'mootocomplete-empty-value',
         liItemClass: 'mootocomplete-li',
         imgPath: '/mootocomplete/imgs/',
@@ -214,7 +207,7 @@ var Mootocomplete = new Class({
 
         if (this.options.displayEmptyItem) {
             var li = new Element('li', {
-                text: this.options.emptyText,
+                text: this.options.emptyItemText,
                 class: this.options.emptyItemClass
             });
             li.addEvent('click', this.processEmptyItemSelected.bind(this));
